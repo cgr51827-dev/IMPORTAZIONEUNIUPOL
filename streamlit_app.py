@@ -196,7 +196,12 @@ def build_rate_records(src_ws):
             continue
         for group in groups:
             values = {}
-            for field_name in ["Tipo di documento", "Numero documento", "Scadenza al netto", "Importo in divisa interna"]:
+            for field_name in [
+                "Tipo di documento",
+                "Numero documento",
+                "Scadenza al netto",
+                "Importo in divisa interna",
+            ]:
                 col = group.field_cols.get(field_name)
                 values[field_name] = src_ws.cell(row, col).value if col else None
             if all(is_blank(v) for v in values.values()):
@@ -218,15 +223,13 @@ def sha256_hex(value: str) -> str:
 
 def check_login():
     st.sidebar.markdown("### Accesso")
+
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
         st.session_state.username = None
 
-    creds = st.secrets.get("auth", {})
-    allowed_users = creds.get("users", {})
-    if not allowed_users:
-        st.error("Configurazione accessi mancante. Inserisci gli utenti nei Secrets di Streamlit.")
-        st.stop()
+    USERNAME = "RECAP"
+    PASSWORD_HASH = sha256_hex("Recap26@")
 
     if st.session_state.authenticated:
         st.sidebar.success(f"Connesso come: {st.session_state.username}")
@@ -242,8 +245,7 @@ def check_login():
         submit = st.form_submit_button("Entra")
 
     if submit:
-        expected_hash = allowed_users.get(username)
-        if expected_hash and sha256_hex(password) == expected_hash:
+        if username == USERNAME and sha256_hex(password) == PASSWORD_HASH:
             st.session_state.authenticated = True
             st.session_state.username = username
             st.rerun()
